@@ -33,5 +33,3 @@ jobs:
             npx angular-cli-ghpages --dir=dist/tools/browser --no-silent
         env:
             GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-            
