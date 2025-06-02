@@ -1,0 +1,38 @@
+
+<ul class=" flex flex-row justify-start sm:justify-center  gap-2 flex-wrap ">
+    @for(month of months; track idx; let idx = $index){
+        <li class="">
+            {{month}}
+        </li>
+    }
+</ul>
+
+<div class="relative mx-auto w-full sm:w-2/3 flex flex-col gap-5 bg-base-300 p-5 rounded-lg font-semibold text-base-content " >
+
+    <h2 class="text-2xl font-semibold  text-start">
+        {{months[month] | uppercase}}
+    </h2>
+    
+    <div class="w-full  grid grid-cols-7  ">
+        @for (item of ["lun","mar","mier","jue","vier","sav","dom"]; track $index) {
+            <span class="col-span-1">
+                {{item}}
+            </span>
+        }
+    </div>
+
+    <div class="flex flex-col  ">
+
+        <div class="w-full grid grid-cols-7  ">
+            @for(semana of calendario;track $index;let last = $last){
+                <span class="grid grid-cols-7 col-span-7 h-32 border-base-100" [ngClass]="last ? '':'border-b-1'">
+                    @for(dia of semana;track $index;let last = $last){
+                        <span [ngClass]="dia?.current ? 'bg-primary':''" class="border-base-100 col-span-1 p-1 bg-base-300 flex flex-col justify-start text-start  " [ngClass]="last ? '':'border-r-1'">
+                            {{dia?.date}}
+                        </span>
+                    }
+                </span>
+            }
+        </div>
+    </div>
+</div>

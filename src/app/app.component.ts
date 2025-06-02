@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { AuthService } from './services/api/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -8,5 +9,7 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
+
+  private _authService:AuthService = inject(AuthService);
   title = 'tools';
 }
