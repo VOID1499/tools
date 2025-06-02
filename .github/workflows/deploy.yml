@@ -22,7 +22,7 @@ jobs:
         run: npm install
 
       - name: Build Angular app
-        run: npm run build -- --configuration production --base-href /NOMBRE_DEL_REPO/
+        run: npm run build -- --configuration production --base-href /tools/
 
       - name: Deploy to GitHub Pages
-        run: npx angular-cli-ghpages --dir=dist/NOMBRE_DEL_PROYECTO
+        run: npx angular-cli-ghpages --dir=dist/tools
