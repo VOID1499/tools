@@ -23,13 +23,6 @@ jobs:
 
       - name: Build Angular app
         run: npm run build -- --configuration production --base-href /tools
-
-      - name: Configurar identidad de Git
-        run: |
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
       - name: Deploy to GitHub Pages
         run: |
             npx angular-cli-ghpages --dir=dist/tools/browser --no-silent
-        env:
-            GH_TOKEN: ${{ secrets.GH_TOKEN }}
