@@ -25,4 +25,4 @@ jobs:
         run: npm run build -- --configuration production --base-href /tools
 
       - name: Deploy to GitHub Pages
-        run: npx angular-cli-ghpages --dir=dist/tools
+        run: npx angular-cli-ghpages --dir=dist/tools/browser
