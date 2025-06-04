@@ -11,8 +11,9 @@ import { FormBuilder } from '@angular/forms';
 })
 export class ReservasGymService {
 
+  public maximoPersonas = 3;
   public horaPorPersona = 1; //hora
-  public tiempoExtra = 5; //min  
+  public tiempoExtra = 0; //min  
   private _authService:AuthService = inject(AuthService);
   private supabase!:SupabaseClient;
 
@@ -38,18 +39,9 @@ obtenerReservas(fecha:string):Observable<PostgrestResponse<Reserva>> {
   )
 }
 
-crearReserva(){
-
+crearReserva(reserva:Reserva[]){
   return from(
-    this.supabase.from("reservas").insert([
-      {
-        nombre:"erick olivares",
-        departamento:"A120",    
-        fecha: "2025-06-01",
-        hora_inicio:"14:00:00",
-        hora_fin:"15:00:00"
-        }
-    ])
+    this.supabase.from("reservas").insert(reserva)
     .select()
   ).pipe(map((response:PostgrestResponse<Reserva>)=>{
       if(response.error){

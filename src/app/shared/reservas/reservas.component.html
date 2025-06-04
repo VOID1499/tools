@@ -85,6 +85,12 @@
          </div>
         </div>
 
+         <div class="col-span-6 flex flex-col gap-1">
+          <label class="label">Cantidad de reservas  {{`( ${maximoPersonas}  maximo )`}}</label>
+          <input formControlName="reservas_deseadas" type="number" class="input w-full" />
+        </div>
+
+
         <button  [disabled]="!reservaForm.valid" type="submit" class="btn btn-primary col-span-6 ">
           Enviar
         </button>

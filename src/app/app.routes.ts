@@ -12,7 +12,7 @@ export const routes: Routes = [
         component:DashboardComponent,
         children:[
             {
-                path:"gimnasio",
+                path:"",
                 component:GimnasioComponent,
                 children:[
                      {

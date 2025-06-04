@@ -33,12 +33,16 @@ export class ReservasComponent implements OnInit {
   private route:ActivatedRoute = inject(ActivatedRoute);
   private fb:FormBuilder = inject(FormBuilder);
 
+
+  public maximoPersonas = this._reservasGymService.maximoPersonas;
+
   reservaForm = this.fb.nonNullable.group({
     nombre:["",[Validators.required,Validators.minLength(1),Validators.maxLength(255)]],
     departamento:["",[Validators.required,Validators.minLength(1),Validators.maxLength(4),Validators.pattern('^[A-Za-z][0-9]{0,3}$')]],
     fecha:[this.fecha,[Validators.required]],
     hora_inicio:["12:00",[Validators.required]],
     hora_fin:[{value:"",disabled:true},[Validators.required]],
+    reservas_deseadas:[1,[Validators.required,Validators.min(1),Validators.max(this.maximoPersonas)]]
   })
 
   constructor(){
@@ -70,7 +74,7 @@ export class ReservasComponent implements OnInit {
     }
 
   ngAfterViewInit() {
-    this.nativeElement = this.elemento.nativeElement;;
+    this.nativeElement = this.elemento.nativeElement;
     this.reservaForm.controls.hora_inicio.valueChanges.subscribe(valor => {
       let hora_fin = this.addTime(valor);
       this.reservaForm.controls.hora_fin.setValue(hora_fin);
@@ -78,9 +82,9 @@ export class ReservasComponent implements OnInit {
   }
   
  
-verificarMaximoDeReservas(nuevaReserva: { hora_inicio: string, hora_fin: string }): boolean {
-  const inicioNueva = moment(nuevaReserva.hora_inicio, 'HH:mm');
-  const finNueva = moment(nuevaReserva.hora_fin, 'HH:mm');
+verificarDisponibilidad(): boolean {
+  const inicioNueva = moment(this.getHoraInicioControl.value, 'HH:mm');
+  const finNueva = moment(this.getHoraFinValue, 'HH:mm');
 
   // Contar reservas que se solapan con la nueva
   const reservasSolapadas = this.reservas?.filter((reserva) => {
@@ -91,8 +95,12 @@ verificarMaximoDeReservas(nuevaReserva: { hora_inicio: string, hora_fin: string 
     return inicioNueva.isBefore(finExistente) && inicioExistente.isBefore(finNueva);
   }) || [];
 
-  // Si ya hay 3 o más reservas, rechazar
-  return reservasSolapadas.length <= 3;
+  const numeroDeReservasDisponibles = this.maximoPersonas - reservasSolapadas.length;
+  if(numeroDeReservasDisponibles >= this.getReservasDeseadasControl.value){
+    return true
+  }
+  
+  return false
 }
 
  seSolapan(inicioA: string, finA: string, inicioB: string, finB: string): boolean {
@@ -123,8 +131,17 @@ verificarMaximoDeReservas(nuevaReserva: { hora_inicio: string, hora_fin: string 
   }
 
   addReserva(){
-    if(this.verificarMaximoDeReservas({hora_inicio:"14:30",hora_fin:"15:30"})){
-      this._reservasGymService.crearReserva().subscribe({
+    if(this.verificarDisponibilidad()){
+      const reserva:Reserva = {
+        departamento:this.getDepartamentoControl.value,
+        nombre:this.getNombreControl.value,
+        fecha:this.getFechaControl.value,
+        hora_inicio:this.getHoraInicioControl.value,
+        hora_fin:this.getHoraFinValue
+      }
+
+      const arr: Reserva[] = Array.from({ length: this.getReservasDeseadasControl.value }, () => ({ ...reserva }));
+      this._reservasGymService.crearReserva(arr).subscribe({
         next:(response:PostgrestResponse<Reserva>)=>{
           this.reservas?.push(...response.data!)
         },
@@ -146,7 +163,7 @@ verificarMaximoDeReservas(nuevaReserva: { hora_inicio: string, hora_fin: string 
   }
 
   onSubmit(){
-    if(this.reservaForm.valid && this.verificarMaximoDeReservas({hora_inicio:this.getHoraInicioControl.value,hora_fin:this.getHoraFinControl.value})){
+    if(this.reservaForm.valid && this.verificarDisponibilidad()){
       this.addReserva();
     }else{
       console.log("error fatal")
@@ -169,7 +186,15 @@ verificarMaximoDeReservas(nuevaReserva: { hora_inicio: string, hora_fin: string 
    get getHoraInicioControl():FormControl{
     return this.reservaForm.controls.hora_inicio;
   }
+
+    get getReservasDeseadasControl():FormControl{
+    return this.reservaForm.controls.reservas_deseadas;
+  }
   
+  
+  get getHoraFinValue(){
+    return this.reservaForm.controls.hora_fin.getRawValue();
+  }
 
    get getHoraFinControl():FormControl{
     return this.reservaForm.controls.hora_fin;
