@@ -94,7 +94,12 @@
         <button  [disabled]="!reservaForm.valid" type="submit" class="btn btn-primary col-span-6 ">
           Enviar
         </button>
-          
+
+        @if(formMessage.message != ''){
+          <span class="col-span-6 text-center font-semibold text-xl" [ngClass]="formMessage.err ? 'text-error':'text-success'">
+            {{formMessage.message}}
+          </span>
+        }
       </form>
 </ng-template>
 

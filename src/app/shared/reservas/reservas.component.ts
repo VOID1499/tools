@@ -5,8 +5,8 @@ import { Reserva } from '../../interfaces/reserva.interface';
 import { ReservasGymService } from '../../services/api/reservas-gym.service';
 import { PostgrestResponse } from '../../interfaces/supabaseResponse.interface';
 import { DateToMomentFormatPipe } from '../../pipes/date-to-moment-format.pipe';
-import { ActivatedRoute } from '@angular/router';
-import { concatMap } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { concatMap ,map,of,Observable, mergeMap, throwError} from 'rxjs';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ModalComponent } from '../modal/modal.component';
 
@@ -18,10 +18,15 @@ import { ModalComponent } from '../modal/modal.component';
 })
 export class ReservasComponent implements OnInit {
   
+  @ViewChild("modalReserva") modalFormReserva!:ModalComponent;
   @ViewChild("elemento") elemento!:ElementRef;
   mouseDownClick = false;
   lastRecordClickMove = 0;
   nativeElement!:HTMLElement; 
+  formMessage = {
+    err:true,
+    message:""
+  };
 
   fecha:string = moment().format("YYYY-MM-DD")
   reservas:Partial<Reserva>[] | null = [];
@@ -32,6 +37,8 @@ export class ReservasComponent implements OnInit {
   private _reservasGymService:ReservasGymService = inject(ReservasGymService);
   private route:ActivatedRoute = inject(ActivatedRoute);
   private fb:FormBuilder = inject(FormBuilder);
+  private router:Router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
 
 
   public maximoPersonas = this._reservasGymService.maximoPersonas;
@@ -82,28 +89,85 @@ export class ReservasComponent implements OnInit {
   }
   
  
-verificarDisponibilidad(): boolean {
+verificarDisponibilidad():Observable<boolean> {
   const inicioNueva = moment(this.getHoraInicioControl.value, 'HH:mm');
   const finNueva = moment(this.getHoraFinValue, 'HH:mm');
+ 
+  return this._reservasGymService.obtenerReservas(this.getFechaControl.value).pipe(
+    map((response:PostgrestResponse<Reserva>)=>{
+       let reservas:Reserva[] = response.data!;
+      if(response.data?.length == 0){
+        return true;
+      }else{
+          const reservasSolapadas = reservas.filter((reserva) => {
+          const inicioExistente = moment(reserva.hora_inicio, 'HH:mm');
+          const finExistente = moment(reserva.hora_fin, 'HH:mm');
 
-  // Contar reservas que se solapan con la nueva
-  const reservasSolapadas = this.reservas?.filter((reserva) => {
-    const inicioExistente = moment(reserva.hora_inicio, 'HH:mm');
-    const finExistente = moment(reserva.hora_fin, 'HH:mm');
+            // Verifica si hay intersección de horarios
+          return inicioNueva.isBefore(finExistente) && inicioExistente.isBefore(finNueva);
+        }) || [];
+        const numeroDeReservasDisponibles = this.maximoPersonas - reservasSolapadas.length;
+        if(numeroDeReservasDisponibles >= this.getReservasDeseadasControl.value){
+          return true
+        }
+        return false
+      }
+    })
+  )
 
-    // Verifica si hay intersección de horarios
-    return inicioNueva.isBefore(finExistente) && inicioExistente.isBefore(finNueva);
-  }) || [];
-
-  const numeroDeReservasDisponibles = this.maximoPersonas - reservasSolapadas.length;
-  if(numeroDeReservasDisponibles >= this.getReservasDeseadasControl.value){
-    return true
-  }
-  
-  return false
 }
 
- seSolapan(inicioA: string, finA: string, inicioB: string, finB: string): boolean {
+
+  getReservas(){
+    return this._reservasGymService.obtenerReservas(this.fecha);
+  }
+
+  addReserva(){
+      const reserva:Reserva = {
+        departamento:this.getDepartamentoControl.value,
+        nombre:this.getNombreControl.value,
+        fecha:this.getFechaControl.value,
+        hora_inicio:this.getHoraInicioControl.value,
+        hora_fin:this.getHoraFinValue
+      }
+      const arr: Reserva[] = Array.from({ length: this.getReservasDeseadasControl.value }, () => ({ ...reserva }));
+
+      this.verificarDisponibilidad().pipe(
+        mergeMap((disponible:boolean)=>{
+          if(disponible){
+            return this._reservasGymService.crearReserva(arr)
+          }else{
+            return throwError(() => new Error('No disponible!'));
+          }
+        })
+      ).subscribe({
+        next:(response:PostgrestResponse<Reserva>)=>{
+          this.setformMessage("Reserva registrada ✍️",false);
+        },
+        error:(error:Error)=>{
+          this.setformMessage(error.message,true)
+        }
+      })
+   
+  }
+
+
+  addTime(time:string,horas:number = this._reservasGymService.horaPorPersona,minutos:number = this._reservasGymService.tiempoExtra):string{
+     return moment(time, "HH:mm") // ← se especifica el formato de entrada
+    .add(horas, "hours")
+    .add(minutos, "minutes")
+    .format("HH:mm");
+  }
+
+  onSubmit(){
+    if(this.reservaForm.valid && this.verificarDisponibilidad()){
+      this.addReserva();
+    }else{
+      console.log("error")
+    }
+  }
+
+   seSolapan(inicioA: string, finA: string, inicioB: string, finB: string): boolean {
   const aInicio = moment(inicioA, 'HH:mm');
   const aFin = moment(finA, 'HH:mm');
   const bInicio = moment(inicioB, 'HH:mm');
@@ -126,49 +190,6 @@ verificarDisponibilidad(): boolean {
   }
 
 
-  getReservas(){
-    return this._reservasGymService.obtenerReservas(this.fecha);
-  }
-
-  addReserva(){
-    if(this.verificarDisponibilidad()){
-      const reserva:Reserva = {
-        departamento:this.getDepartamentoControl.value,
-        nombre:this.getNombreControl.value,
-        fecha:this.getFechaControl.value,
-        hora_inicio:this.getHoraInicioControl.value,
-        hora_fin:this.getHoraFinValue
-      }
-
-      const arr: Reserva[] = Array.from({ length: this.getReservasDeseadasControl.value }, () => ({ ...reserva }));
-      this._reservasGymService.crearReserva(arr).subscribe({
-        next:(response:PostgrestResponse<Reserva>)=>{
-          this.reservas?.push(...response.data!)
-        },
-        error(error){
-          console.log(error)
-        }
-      })
-    }else{
-      console.log("Maximo de reservas en ese horario")
-    }
-  }
-
-
-  addTime(time:string,horas:number = this._reservasGymService.horaPorPersona,minutos:number = this._reservasGymService.tiempoExtra):string{
-     return moment(time, "HH:mm") // ← se especifica el formato de entrada
-    .add(horas, "hours")
-    .add(minutos, "minutes")
-    .format("HH:mm");
-  }
-
-  onSubmit(){
-    if(this.reservaForm.valid && this.verificarDisponibilidad()){
-      this.addReserva();
-    }else{
-      console.log("error fatal")
-    }
-  }
 
 
   get getNombreControl():FormControl{
@@ -232,6 +253,13 @@ verificarDisponibilidad(): boolean {
     this.lastRecordClickMove = xclient;
   }
 
+  setformMessage(message:string,error:boolean){
+    this.formMessage.message = message;
+    this.formMessage.err = error;
+    setTimeout(()=>{
+      this.formMessage.message = "";
+    },3000)
+  }
   
   
 }
