@@ -1,4 +1,4 @@
-<div [ngClass]="hidden ? 'hidden' : ''" class="fixed left-0 top-0  z-30 w-full h-screen bg-base-300/80 flex flex-col justify-center" >
+<div (click)="closeModal()" [ngClass]="hidden ? 'hidden' : ''" class="fixed left-0 top-0  z-30 w-full h-screen bg-base-300/80 flex flex-col justify-center" >
 
     <ng-container [ngTemplateOutlet]="modalContent">
         
