@@ -15,10 +15,10 @@
 
 
 <!-- Contenedor main -->
-<div #elemento class="relative w-4/5 mx-auto scroll-x-oculto min-h-[400px] cursor-pointer " (mousemove)="mouseMove($event)" (mouseleave)="mouseLeave($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp($event)" >
+<div #elemento class="relative w-4/5 mx-auto scroll-x-oculto min-h-96 cursor-pointer " (mousemove)="mouseMove($event)" (mouseleave)="mouseLeave($event)" (mousedown)="mouseDown($event)" (mouseup)="mouseUp($event)" >
 
   <!-- Timeline base (24h) -->
-  <div class="absolute gap-1 -z-10  flex flex-row w-[2400px] min-h-[400px]  " >
+  <div class="absolute gap-1 -z-10  flex flex-row w-[2400px] min-h-96  " >
     @for(hour of hours;track $index){
         <div class="relative w-[100px] bg-base-200 flex flex-col justify-start text-start ps-1 ">
             {{hour}}:00
@@ -27,18 +27,18 @@
   </div>
 
 
-  <!-- Reservas -->
-    <div class="relative z-10 w-[2400px] flex flex-col gap-1 pt-10 " >
+  <div class="relative  w-[2400px] mt-20  flex flex-col">
+    @for(fila of reservasSort;track filaIndice ;let filaIndice = $index){
 
-        @for(reserva of reservas;track $index){
-            <div [attr.data-tip]="`${reserva.nombre} ${reserva.hora_inicio}-${reserva.hora_fin}`" class="relative  bg-primary opacity  text-end flex flex-row justify-between px-1 rounded-sm tooltip tooltip-info tooltip-top"   [ngStyle]="{left: getLeft(reserva.hora_inicio!) + 'px', width: getWidth(reserva.hora_inicio! , reserva.hora_fin!) + 'px'}">
-                <span class="text-center">
-                    {{reserva.departamento}}
-                </span>
-            </div>
+            @for(reserva of fila;track $index){
+                <div (click)="eliminarReserva(reserva)" [attr.data-tip]="`${reserva.nombre} ${reserva.hora_inicio}-${reserva.hora_fin}`" class="bg-primary px-1 rounded-sm h-6 tooltip tooltip-info tooltip-top absolute mx-1"   [ngStyle]="{left: getLeft(reserva.hora_inicio!) + 'px', width: getWidth(reserva.hora_inicio! , reserva.hora_fin!) + 'px', top: (filaIndice * 25) + 'px'}">
+                  {{reserva.departamento}}
+                </div>
+            }
         }
+   
+  </div>
 
-    </div>
 </div>
 
 

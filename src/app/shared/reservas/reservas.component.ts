@@ -29,7 +29,8 @@ export class ReservasComponent implements OnInit {
   };
 
   fecha:string = moment().format("YYYY-MM-DD")
-  reservas:Partial<Reserva>[] | null = [];
+  reservas:Reserva[] | null = [];
+  reservasSort: any[][] = [];
   pixelesPorHora = 100;
   widthTotal = this.pixelesPorHora * 24;
   hours = Array.from({ length: 24 }, (_, i) => i);
@@ -61,7 +62,6 @@ export class ReservasComponent implements OnInit {
       let x = this.reservaForm.controls.hora_inicio.value
       const hora_fin = this.addTime(x)
       this.reservaForm.controls.hora_fin.setValue(hora_fin);
-
       this.route.paramMap.pipe(
       concatMap(params => {
         const fechaParam = params.get('fecha')!;
@@ -73,6 +73,7 @@ export class ReservasComponent implements OnInit {
     ).subscribe({
         next:(response:PostgrestResponse<Reserva>)=>{
           this.reservas = response.data;
+          this.reordenar();
         },
         error:(error)=>{
           console.log(error)
@@ -82,44 +83,55 @@ export class ReservasComponent implements OnInit {
 
   ngAfterViewInit() {
     this.nativeElement = this.elemento.nativeElement;
-    this.reservaForm.controls.hora_inicio.valueChanges.subscribe(valor => {
-      let hora_fin = this.addTime(valor);
+    this.reservaForm.controls.hora_inicio.valueChanges.subscribe(hora_inicio => {
+      let hora_fin = this.addTime(hora_inicio);
       this.reservaForm.controls.hora_fin.setValue(hora_fin);
   });
   }
   
  
-verificarDisponibilidad():Observable<boolean> {
-  const inicioNueva = moment(this.getHoraInicioControl.value, 'HH:mm');
-  const finNueva = moment(this.getHoraFinValue, 'HH:mm');
- 
-  return this._reservasGymService.obtenerReservas(this.getFechaControl.value).pipe(
-    map((response:PostgrestResponse<Reserva>)=>{
-       let reservas:Reserva[] = response.data!;
-      if(response.data?.length == 0){
-        return true;
-      }else{
-          const reservasSolapadas = reservas.filter((reserva) => {
-          const inicioExistente = moment(reserva.hora_inicio, 'HH:mm');
-          const finExistente = moment(reserva.hora_fin, 'HH:mm');
+  verificarDisponibilidad():Observable<boolean> {
+    const inicioNueva = moment(this.getHoraInicioControl.value, 'HH:mm');
+    const finNueva = moment(this.getHoraFinValue, 'HH:mm');
+  
+    return this._reservasGymService.obtenerReservas(this.getFechaControl.value).pipe(
+      map((response:PostgrestResponse<Reserva>)=>{
+        let reservas:Reserva[] = response.data!;
+        if(response.data?.length == 0){
+          return true;
+        }else{
+            const reservasSolapadas = reservas.filter((reserva) => {
+            const inicioExistente = moment(reserva.hora_inicio, 'HH:mm');
+            const finExistente = moment(reserva.hora_fin, 'HH:mm');
 
-            // Verifica si hay intersección de horarios
-          return inicioNueva.isBefore(finExistente) && inicioExistente.isBefore(finNueva);
-        }) || [];
-        const numeroDeReservasDisponibles = this.maximoPersonas - reservasSolapadas.length;
-        if(numeroDeReservasDisponibles >= this.getReservasDeseadasControl.value){
-          return true
+              // Verifica si hay intersección de horarios
+            return inicioNueva.isBefore(finExistente) && inicioExistente.isBefore(finNueva);
+          }) || [];
+          const numeroDeReservasDisponibles = this.maximoPersonas - reservasSolapadas.length;
+          if(numeroDeReservasDisponibles >= this.getReservasDeseadasControl.value){
+            return true
+          }
+          return false
         }
-        return false
-      }
-    })
-  )
+      })
+    )
 
-}
+  }
 
 
   getReservas(){
     return this._reservasGymService.obtenerReservas(this.fecha);
+  }
+
+  eliminarReserva(reserva:Reserva){
+    this._reservasGymService.eliminarReserva(reserva).subscribe({
+      next:(response)=>{
+        console.log(response)
+      },
+      error:(error)=>{
+        console.log(error)
+      }
+    })
   }
 
   addReserva(){
@@ -142,6 +154,7 @@ verificarDisponibilidad():Observable<boolean> {
         })
       ).subscribe({
         next:(response:PostgrestResponse<Reserva>)=>{
+          console.log(response)
           this.setformMessage("Reserva registrada ✍️",false);
         },
         error:(error:Error)=>{
@@ -167,16 +180,40 @@ verificarDisponibilidad():Observable<boolean> {
     }
   }
 
-   seSolapan(inicioA: string, finA: string, inicioB: string, finB: string): boolean {
-  const aInicio = moment(inicioA, 'HH:mm');
-  const aFin = moment(finA, 'HH:mm');
-  const bInicio = moment(inicioB, 'HH:mm');
-  const bFin = moment(finB, 'HH:mm');
-
-  return aInicio.isBefore(bFin) && bInicio.isBefore(aFin);
+  
+  intersectan(reservaUno:Reserva, reservaDos:Reserva): boolean {
+    const aInicio = moment(reservaUno.hora_inicio, 'HH:mm');
+    const aFin = moment(reservaUno.hora_fin, 'HH:mm');
+    const bInicio = moment(reservaDos.hora_inicio, 'HH:mm');
+    const bFin = moment(reservaDos.hora_fin, 'HH:mm');
+    return aInicio.isBefore(bFin) && bInicio.isBefore(aFin);
   }  
 
-  // Asumimos 100px por hora
+reordenar() {
+  this.reservas!.forEach(reservaActual => {
+    let colocada = false;
+    // Intenta colocarla en una fila existente
+    for (const fila of this.reservasSort) {
+      const solapa = fila.some(reservaExistente =>
+        this.intersectan(reservaActual, reservaExistente)
+      );
+
+      if (!solapa) {
+        fila.push(reservaActual);
+        colocada = true;
+        break;
+      }
+    }
+
+    // Si no pudo colocarse en ninguna fila existente, crea una nueva
+    if (!colocada) {
+      this.reservasSort.push([reservaActual]);
+    }
+  });
+
+  console.log(this.reservasSort);
+}
+  
   getLeft(hora: string): number {
     const [h, m] = hora.split(':').map(Number);
     return h * this.pixelesPorHora + (m / 60) * this.pixelesPorHora;

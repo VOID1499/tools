@@ -51,6 +51,29 @@ crearReserva(reserva:Reserva[]){
     }))
 }
 
+eliminarReserva(reserva: Reserva) {
+  const id = reserva.id;
+  return from(
+    this.supabase
+      .from("reservas")
+      .delete()
+      .eq("id", id)
+      .select() // <-- esto hace que te devuelva la(s) fila(s) eliminadas
+  ).pipe(
+    map((response: PostgrestResponse<Reserva>) => {
+      if (response.error) {
+        throw response.error;
+      }
+
+      if (response.data!.length === 0) {
+        throw new Error("No se encontró ninguna reserva con ese ID.");
+      }
+
+      return response;
+    })
+  );
+}
+
   
 
 
