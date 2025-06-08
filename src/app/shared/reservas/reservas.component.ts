@@ -45,6 +45,7 @@ export class ReservasComponent implements OnInit {
   public maximoPersonas = this._reservasGymService.maximoPersonas;
 
   reservaForm = this.fb.nonNullable.group({
+    id:[{value:0,disabled:true}],
     nombre:["",[Validators.required,Validators.minLength(1),Validators.maxLength(255)]],
     departamento:["",[Validators.required,Validators.minLength(1),Validators.maxLength(4),Validators.pattern('^[A-Za-z][0-9]{0,3}$')]],
     fecha:[this.fecha,[Validators.required]],
@@ -59,9 +60,7 @@ export class ReservasComponent implements OnInit {
 
   
   ngOnInit(): void {
-      let x = this.reservaForm.controls.hora_inicio.value
-      const hora_fin = this.addTime(x)
-      this.reservaForm.controls.hora_fin.setValue(hora_fin);
+      this.resetForm();
       this.route.paramMap.pipe(
       concatMap(params => {
         const fechaParam = params.get('fecha')!;
@@ -115,7 +114,6 @@ export class ReservasComponent implements OnInit {
         }
       })
     )
-
   }
 
 
@@ -123,62 +121,6 @@ export class ReservasComponent implements OnInit {
     return this._reservasGymService.obtenerReservas(this.fecha);
   }
 
-  eliminarReserva(reserva:Reserva){
-    this._reservasGymService.eliminarReserva(reserva).subscribe({
-      next:(response)=>{
-        console.log(response)
-      },
-      error:(error)=>{
-        console.log(error)
-      }
-    })
-  }
-
-  addReserva(){
-      const reserva:Reserva = {
-        departamento:this.getDepartamentoControl.value,
-        nombre:this.getNombreControl.value,
-        fecha:this.getFechaControl.value,
-        hora_inicio:this.getHoraInicioControl.value,
-        hora_fin:this.getHoraFinValue
-      }
-      const arr: Reserva[] = Array.from({ length: this.getReservasDeseadasControl.value }, () => ({ ...reserva }));
-
-      this.verificarDisponibilidad().pipe(
-        mergeMap((disponible:boolean)=>{
-          if(disponible){
-            return this._reservasGymService.crearReserva(arr)
-          }else{
-            return throwError(() => new Error('No disponible!'));
-          }
-        })
-      ).subscribe({
-        next:(response:PostgrestResponse<Reserva>)=>{
-          console.log(response)
-          this.setformMessage("Reserva registrada ✍️",false);
-        },
-        error:(error:Error)=>{
-          this.setformMessage(error.message,true)
-        }
-      })
-   
-  }
-
-
-  addTime(time:string,horas:number = this._reservasGymService.horaPorPersona,minutos:number = this._reservasGymService.tiempoExtra):string{
-     return moment(time, "HH:mm") // ← se especifica el formato de entrada
-    .add(horas, "hours")
-    .add(minutos, "minutes")
-    .format("HH:mm");
-  }
-
-  onSubmit(){
-    if(this.reservaForm.valid && this.verificarDisponibilidad()){
-      this.addReserva();
-    }else{
-      console.log("error")
-    }
-  }
 
   
   intersectan(reservaUno:Reserva, reservaDos:Reserva): boolean {
@@ -189,30 +131,30 @@ export class ReservasComponent implements OnInit {
     return aInicio.isBefore(bFin) && bInicio.isBefore(aFin);
   }  
 
-reordenar() {
-  this.reservas!.forEach(reservaActual => {
-    let colocada = false;
-    // Intenta colocarla en una fila existente
-    for (const fila of this.reservasSort) {
-      const solapa = fila.some(reservaExistente =>
-        this.intersectan(reservaActual, reservaExistente)
-      );
+  reordenar() {
+    this.reservas!.forEach(reservaActual => {
+      let colocada = false;
+      // Intenta colocarla en una fila existente
+      for (const fila of this.reservasSort) {
+        const solapa = fila.some(reservaExistente =>
+          this.intersectan(reservaActual, reservaExistente)
+        );
 
-      if (!solapa) {
-        fila.push(reservaActual);
-        colocada = true;
-        break;
+        if (!solapa) {
+          fila.push(reservaActual);
+          colocada = true;
+          break;
+        }
       }
-    }
 
-    // Si no pudo colocarse en ninguna fila existente, crea una nueva
-    if (!colocada) {
-      this.reservasSort.push([reservaActual]);
-    }
-  });
+      // Si no pudo colocarse en ninguna fila existente, crea una nueva
+      if (!colocada) {
+        this.reservasSort.push([reservaActual]);
+      }
+    });
 
-  console.log(this.reservasSort);
-}
+    console.log(this.reservasSort);
+  }
   
   getLeft(hora: string): number {
     const [h, m] = hora.split(':').map(Number);
@@ -227,38 +169,7 @@ reordenar() {
   }
 
 
-
-
-  get getNombreControl():FormControl{
-    return this.reservaForm.controls.nombre;
-  }
-
-   get getDepartamentoControl():FormControl{
-    return this.reservaForm.controls.departamento;
-  }
-
-   get getFechaControl():FormControl{
-    return this.reservaForm.controls.fecha;
-  }
-
-   get getHoraInicioControl():FormControl{
-    return this.reservaForm.controls.hora_inicio;
-  }
-
-    get getReservasDeseadasControl():FormControl{
-    return this.reservaForm.controls.reservas_deseadas;
-  }
-  
-  
-  get getHoraFinValue(){
-    return this.reservaForm.controls.hora_fin.getRawValue();
-  }
-
-   get getHoraFinControl():FormControl{
-    return this.reservaForm.controls.hora_fin;
-  }
  
-  /////////////////////////////
   mouseDown(e:MouseEvent){
     e.preventDefault();     
     e.stopPropagation(); 
@@ -290,13 +201,145 @@ reordenar() {
     this.lastRecordClickMove = xclient;
   }
 
-  setformMessage(message:string,error:boolean){
-    this.formMessage.message = message;
-    this.formMessage.err = error;
-    setTimeout(()=>{
-      this.formMessage.message = "";
-    },3000)
+  
+  
+  
+  //metodos de formulario
+  
+  setformMessage({ message, error }: { message: string; error: boolean }){
+   this.formMessage.message = message;
+   this.formMessage.err = error;
+   setTimeout(()=>{
+     this.formMessage.message = "";
+   },3000)
+ }
+  
+  eliminarReserva(id:number){
+    this._reservasGymService.eliminarReserva(id).subscribe({
+      next:(response)=>{
+        this.setformMessage({message:"Reserva eliminada",error:false})
+      },
+      error:(error)=>{
+        this.setformMessage({message:"Ocurrio un error",error:true})
+        console.log(error.message)
+      }
+    })
+  }
+
+  resetForm(){
+    this.reservaForm.reset({
+      hora_inicio:"12:00",
+      hora_fin:this.addTime(this.getHoraInicioControl.value)
+    });
+  }
+
+  openForm(reserva?:Reserva){
+    if(reserva){
+      this.reservaForm.setValue({
+        id:reserva.id!,
+        nombre:reserva.nombre,
+        fecha:reserva.fecha,
+        departamento:reserva.departamento,
+        hora_inicio:reserva.hora_inicio,
+        hora_fin:reserva.hora_fin,
+        reservas_deseadas:1,
+      });
+      this.getDepartamentoControl.disable();
+      this.getNombreControl.disable();
+      this.getFechaControl.disable();
+      this.getHoraInicioControl.disable();
+      this.modalFormReserva.showModal();
+    }else{
+      this.resetForm();
+      this.reservaForm.enable();
+      this.getHoraFinControl.disable();
+      this.modalFormReserva.showModal();
+    }
+  }
+
+  addReserva(){
+      const reserva:Reserva = {
+        departamento:this.getDepartamentoControl.value,
+        nombre:this.getNombreControl.value,
+        fecha:this.getFechaControl.value,
+        hora_inicio:this.getHoraInicioControl.value,
+        hora_fin:this.getHoraFinValue
+      }
+      const arr: Reserva[] = Array.from({ length: this.getReservasDeseadasControl.value }, () => ({ ...reserva }));
+
+      this.verificarDisponibilidad().pipe(
+        mergeMap((disponible:boolean)=>{
+          if(disponible){
+            return this._reservasGymService.crearReserva(arr)
+          }else{
+            return throwError(() => new Error('No disponible!'));
+          }
+        })
+      ).subscribe({
+        next:(response:PostgrestResponse<Reserva>)=>{
+          console.log(response)
+          this.setformMessage({message:"Reserva registrada ✍️",error:false});
+        },
+        error:(error:Error)=>{
+          this.setformMessage({message:error.message,error:true})
+        }
+      })
+   
+  }
+
+
+  addTime(time:string,horas:number = this._reservasGymService.horaPorPersona,minutos:number = this._reservasGymService.tiempoExtra):string{
+     return moment(time, "HH:mm") // ← se especifica el formato de entrada
+    .add(horas, "hours")
+    .add(minutos, "minutes")
+    .format("HH:mm");
+  }
+
+  onSubmit(){
+    if(this.reservaForm.valid && this.getIdValue != 0){
+      this.eliminarReserva(this.getIdValue);
+      return
+    }
+   
+    if(this.reservaForm.valid && this.verificarDisponibilidad()){
+      this.addReserva();
+    }
+
+  }
+
+
+  get getNombreControl():FormControl{
+    return this.reservaForm.controls.nombre;
+  }
+
+   get getDepartamentoControl():FormControl{
+    return this.reservaForm.controls.departamento;
+  }
+
+   get getFechaControl():FormControl{
+    return this.reservaForm.controls.fecha;
+  }
+
+   get getHoraInicioControl():FormControl{
+    return this.reservaForm.controls.hora_inicio;
+  }
+
+    get getReservasDeseadasControl():FormControl{
+    return this.reservaForm.controls.reservas_deseadas;
   }
   
+  get getHoraFinValue(){
+    return this.reservaForm.controls.hora_fin.getRawValue();
+  }
+
+  get getIdValue(){
+    return this.reservaForm.controls.id.getRawValue();
+  }
+
+   get getHoraFinControl():FormControl{
+    return this.reservaForm.controls.hora_fin;
+  }
   
 }
+
+

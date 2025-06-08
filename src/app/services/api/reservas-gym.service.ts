@@ -51,8 +51,8 @@ crearReserva(reserva:Reserva[]){
     }))
 }
 
-eliminarReserva(reserva: Reserva) {
-  const id = reserva.id;
+eliminarReserva(id:number) {
+  console.log(id)
   return from(
     this.supabase
       .from("reservas")

@@ -4,7 +4,7 @@
     <h1 class="text-2xl">
         {{fecha | dateToMomentFormat }}
     </h1>
-    <button  (click)="modalReserva.showModal()" class="btn rounded-lg font-semibold">
+    <button  (click)="openForm()" class="btn rounded-lg font-semibold">
         + Agregar reserva
     </button>
     <span class="w-full">
@@ -31,7 +31,7 @@
     @for(fila of reservasSort;track filaIndice ;let filaIndice = $index){
 
             @for(reserva of fila;track $index){
-                <div (click)="eliminarReserva(reserva)" [attr.data-tip]="`${reserva.nombre} ${reserva.hora_inicio}-${reserva.hora_fin}`" class="bg-primary px-1 rounded-sm h-6 tooltip tooltip-info tooltip-top absolute mx-1"   [ngStyle]="{left: getLeft(reserva.hora_inicio!) + 'px', width: getWidth(reserva.hora_inicio! , reserva.hora_fin!) + 'px', top: (filaIndice * 25) + 'px'}">
+                <div (click)="openForm(reserva)" [attr.data-tip]="`${reserva.nombre} ${reserva.hora_inicio}-${reserva.hora_fin}`" class="bg-primary px-1 rounded-sm h-6 tooltip tooltip-info tooltip-top absolute mx-1"   [ngStyle]="{left: getLeft(reserva.hora_inicio!) + 'px', width: getWidth(reserva.hora_inicio! , reserva.hora_fin!) + 'px', top: (filaIndice * 25) + 'px'}">
                   {{reserva.departamento}}
                 </div>
             }
@@ -56,6 +56,7 @@
           </button>
 
         </div>
+
 
         <div class="col-span-6 flex flex-col gap-1">
           <label class="label">Departamento</label>
@@ -90,19 +91,29 @@
           <input formControlName="reservas_deseadas" type="number" class="input w-full" />
         </div>
 
+        <ng-container [ngTemplateOutlet]="reservaForm.controls.id.getRawValue() != 0 ? btnEliminar : btnEnviar" >
 
-        <button  [disabled]="!reservaForm.valid" type="submit" class="btn btn-primary col-span-6 ">
-          Enviar
-        </button>
+        </ng-container>
 
+        
         @if(formMessage.message != ''){
           <span class="col-span-6 text-center font-semibold text-xl" [ngClass]="formMessage.err ? 'text-error':'text-success'">
             {{formMessage.message}}
           </span>
         }
       </form>
+    </ng-template>
+    
+    
+<ng-template #btnEnviar>
+      <button  [disabled]="!reservaForm.valid" type="submit" class="btn btn-primary col-span-6 ">
+        Enviar
+      </button>
 </ng-template>
-
-
-
   
+
+<ng-template #btnEliminar>
+      <button  [disabled]="!reservaForm.valid" type="submit" class="btn btn-error col-span-6 ">
+        Eliminar
+      </button>
+</ng-template>
