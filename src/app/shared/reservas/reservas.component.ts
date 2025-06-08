@@ -248,6 +248,7 @@ export class ReservasComponent implements OnInit {
       this.getNombreControl.disable();
       this.getFechaControl.disable();
       this.getHoraInicioControl.disable();
+      this.getReservasDeseadasControl.disable();
       this.modalFormReserva.showModal();
     }else{
       this.resetForm();
