@@ -1,7 +1,7 @@
 import { inject, Injectable, input } from '@angular/core';
 import { AuthService } from './auth.service';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { from, Observable,defer ,map} from 'rxjs';
+import { from, Observable,defer ,map, Subject} from 'rxjs';
 import { Reserva } from '../../interfaces/reserva.interface';
 import { PostgrestResponse } from '../../interfaces/supabaseResponse.interface';
 import { FormBuilder } from '@angular/forms';
@@ -17,14 +17,37 @@ export class ReservasGymService {
   private _authService:AuthService = inject(AuthService);
   private supabase!:SupabaseClient;
 
+  private changesDataReservas = new Subject<any>();
+  public changesDataReservas$ = this.changesDataReservas.asObservable();
+
   constructor() { 
     this._authService.supabase$.subscribe({
-      next:(sup:SupabaseClient)=>{
-        this.supabase = sup;
+      next:(supabaseClient:SupabaseClient)=>{
+        this.supabase = supabaseClient;
+        this.supbaseSubscripcion();
       }
       })
   }
 
+
+supbaseSubscripcion(){
+  this.supabase
+      .channel('realtime-reservas')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'reservas',
+        },
+        (payload) => {
+          this.changesDataReservas.next(payload);
+        }
+      )
+      .subscribe((status) => {
+        console.log('Real time reservas', status);
+      });
+}  
 
 obtenerReservas(fecha:string):Observable<PostgrestResponse<Reserva>> {
   return from(

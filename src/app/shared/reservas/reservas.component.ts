@@ -60,6 +60,15 @@ export class ReservasComponent implements OnInit {
 
   
   ngOnInit(): void {
+      this._reservasGymService.changesDataReservas$.subscribe({
+        next:(payload)=>{
+          if(!payload.errors){
+            if(payload.eventType == "DELETE"){
+              console.log(payload)
+            }
+          }
+        }
+      })
       this.resetForm();
       this.route.paramMap.pipe(
       concatMap(params => {
@@ -132,6 +141,7 @@ export class ReservasComponent implements OnInit {
   }  
 
   reordenar() {
+    this.reservasSort = [];
     this.reservas!.forEach(reservaActual => {
       let colocada = false;
       // Intenta colocarla en una fila existente
@@ -217,6 +227,11 @@ export class ReservasComponent implements OnInit {
   eliminarReserva(id:number){
     this._reservasGymService.eliminarReserva(id).subscribe({
       next:(response)=>{
+       const index = this.reservas!.findIndex(item => item.id === id);
+       if(index != -1){
+         this.reservas?.splice(index,1)
+         this.reordenar();
+       }
         this.setformMessage({message:"Reserva eliminada",error:false})
       },
       error:(error)=>{
@@ -278,7 +293,12 @@ export class ReservasComponent implements OnInit {
         })
       ).subscribe({
         next:(response:PostgrestResponse<Reserva>)=>{
-          console.log(response)
+
+          if(reserva.fecha == this.fecha){
+            console.log("es pa hoy")
+            this.reservas?.push(...response.data!)
+            this.reordenar();
+          }
           this.setformMessage({message:"Reserva registrada ✍️",error:false});
         },
         error:(error:Error)=>{
