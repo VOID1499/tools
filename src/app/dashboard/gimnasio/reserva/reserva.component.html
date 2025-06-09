@@ -1,0 +1,14 @@
+<div class="card w-96 bg-base-100 card-sm shadow-sm mx-auto  p-2">
+    <button type="button" (click)="emitClose()" class="btn btn-sm btn-circle btn-ghost">
+           ✕
+   </button>
+  <div class="card-body flex flex-col">
+    @if(reserva){
+        <h2 class="card-title">{{reserva.nombre}}</h2>
+        <p>A card component has a figure, a body part, and inside body there are title and actions parts</p>
+        <div class="justify-end card-actions">
+          <button class="btn btn-error">Eliminar</button>
+        </div>
+    }
+  </div>
+</div>

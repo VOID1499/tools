@@ -45,6 +45,8 @@
 <app-modal #modalReserva [modalContent]="formReserva"></app-modal>
 
 <ng-template #formReserva>
+  @if(reservaForm.controls.id.value == 0){
+
       <form (click)="$event.stopPropagation()" [formGroup]="reservaForm" (submit)="onSubmit()" class="grid grid-cols-6  mx-auto gap-5 w-5/6 sm:w-2/6 rounded-lg p-5 bg-base-100 shadow-md">
         
         <div class="col-span-6 flex justify-between">
@@ -91,7 +93,7 @@
           <input formControlName="reservas_deseadas" type="number" class="input w-full" />
         </div>
 
-        <ng-container [ngTemplateOutlet]="reservaForm.controls.id.getRawValue() != 0 ? btnEliminar : btnEnviar" >
+        <ng-container [ngTemplateOutlet]="btnEnviar" >
 
         </ng-container>
 
@@ -102,6 +104,36 @@
           </span>
         }
       </form>
+    }@else{
+      <div class="card w-96 bg-base-100 card-sm shadow-sm mx-auto">
+        <div class="card-body flex flex-col gap-4">
+          <div class="w-full flex justify-between">
+            <h2 class="card-title text-xl ">
+              {{getFechaControl.value | dateToMomentFormat}}
+            </h2>
+            <button type="button" (click)="modalReserva.closeModal()" class="btn btn-sm btn-circle btn-ghost self-end">
+                ✕
+            </button>
+          </div>
+          
+          <p class="text-lg w-full ">
+            {{getNombreControl.value}}
+            {{`${getHoraInicioControl.value} - ${getHoraFinValue}`}}
+          </p>
+          
+          <div class="flex justify-between items-end w-full">
+            <span class="text-accent text-xl">{{getDepartamentoControl.value}}</span>
+            <button (click)="eliminarReserva(reservaForm.controls.id.value)" class="btn btn-sm btn-error">Eliminar</button>
+          </div>
+
+          @if(formMessage.message != ''){
+            <span class="col-span-6 text-center font-semibold text-xl" [ngClass]="formMessage.err ? 'text-error':'text-success'">
+              {{formMessage.message}}
+            </span>
+          }
+        </div>
+    </div>
+    }
     </ng-template>
     
     
@@ -111,9 +143,3 @@
       </button>
 </ng-template>
   
-
-<ng-template #btnEliminar>
-      <button  [disabled]="!reservaForm.valid" type="submit" class="btn btn-error col-span-6 ">
-        Eliminar
-      </button>
-</ng-template>

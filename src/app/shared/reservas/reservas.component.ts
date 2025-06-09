@@ -243,7 +243,7 @@ export class ReservasComponent implements OnInit {
 
   resetForm(){
     this.reservaForm.reset({
-      hora_inicio:"12:00",
+      hora_inicio:moment().format("HH:mm"),
       hora_fin:this.addTime(this.getHoraInicioControl.value)
     });
   }
@@ -259,15 +259,9 @@ export class ReservasComponent implements OnInit {
         hora_fin:reserva.hora_fin,
         reservas_deseadas:1,
       });
-      this.getDepartamentoControl.disable();
-      this.getNombreControl.disable();
-      this.getFechaControl.disable();
-      this.getHoraInicioControl.disable();
-      this.getReservasDeseadasControl.disable();
       this.modalFormReserva.showModal();
     }else{
       this.resetForm();
-      this.reservaForm.enable();
       this.getHoraFinControl.disable();
       this.modalFormReserva.showModal();
     }
@@ -317,15 +311,9 @@ export class ReservasComponent implements OnInit {
   }
 
   onSubmit(){
-    if(this.reservaForm.valid && this.getIdValue != 0){
-      this.eliminarReserva(this.getIdValue);
-      return
-    }
-   
     if(this.reservaForm.valid && this.verificarDisponibilidad()){
       this.addReserva();
     }
-
   }
 
 
