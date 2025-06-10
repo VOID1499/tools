@@ -41,8 +41,7 @@ export class ReservasComponent implements OnInit {
   private router:Router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
 
-
-  public maximoPersonas = this._reservasGymService.maximoPersonas;
+  public maximoPersonas = this._reservasGymService.configuracionReservas.maximoPersonas;
 
   reservaForm = this.fb.nonNullable.group({
     id:[{value:0,disabled:true}],
@@ -303,10 +302,11 @@ export class ReservasComponent implements OnInit {
   }
 
 
-  addTime(time:string,horas:number = this._reservasGymService.horaPorPersona,minutos:number = this._reservasGymService.tiempoExtra):string{
+  addTime(time:string,horas:string = this._reservasGymService.configuracionReservas.horasPorPersona):string{
+    const [h, m] = horas.split(':').map(Number);
      return moment(time, "HH:mm") // ← se especifica el formato de entrada
-    .add(horas, "hours")
-    .add(minutos, "minutes")
+    .add(h, "hours")
+    .add(m,"minutes")
     .format("HH:mm");
   }
 

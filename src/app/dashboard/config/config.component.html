@@ -1,0 +1,31 @@
+<section class="relative w-full flex flex-col grow-0 gap-0 mt-20 p-5">
+  <div class="mockup-window bg-base-200 border border-base-300 flex flex-col items-center gap-5 p-5">
+
+
+    <div class=" w-full sm:w-1/3   flex justify-between  gap-2 flex-wrap  items-center">
+        <label class="" for="">Horas por persona</label>
+        <input [(ngModel)]="configuracion.horasPorPersona" type="time" class="input">
+    </div>
+
+      <div class=" w-full sm:w-1/3  flex justify-between  gap-2 flex-wrap  items-center">
+        <label class="" for="">Maximo de personas</label>
+        <input  [(ngModel)]="configuracion.maximoPersonas" type="number" class="input">
+    </div>
+
+
+    <div class=" w-full  flex justify-end  gap-2 flex-wrap  items-center">
+      <button (click)="guardarConfig()" type="button" class="btn btn-primary">
+        Guardar
+      </button>
+    </div>
+
+    @if(message != ""){
+      <div class=" w-full sm:w-1/3 ">
+        <div role="alert" class="alert alert-success">
+          <span>{{message}}</span>
+        </div>
+      </div>
+    }
+
+  </div>
+</section>

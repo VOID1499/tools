@@ -5,15 +5,17 @@ import { from, Observable,defer ,map, Subject} from 'rxjs';
 import { Reserva } from '../../interfaces/reserva.interface';
 import { PostgrestResponse } from '../../interfaces/supabaseResponse.interface';
 import { FormBuilder } from '@angular/forms';
+import { configuracionReservas} from '../../interfaces/reservasConfiguracion';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ReservasGymService {
 
-  public maximoPersonas = 3;
-  public horaPorPersona = 1; //hora
-  public tiempoExtra = 0; //min  
+  public configuracionReservas:configuracionReservas = {
+    horasPorPersona:"01:30",
+    maximoPersonas:3,
+  }
   private _authService:AuthService = inject(AuthService);
   private supabase!:SupabaseClient;
 
@@ -21,6 +23,12 @@ export class ReservasGymService {
   public changesDataReservas$ = this.changesDataReservas.asObservable();
 
   constructor() { 
+  const config = localStorage.getItem("reservas_config");
+  if (config && typeof(config)) {
+    this.configuracionReservas = JSON.parse(config);
+  } else {
+    localStorage.setItem("reservas_config", JSON.stringify(this.configuracionReservas));
+  }
     this._authService.supabase$.subscribe({
       next:(supabaseClient:SupabaseClient)=>{
         this.supabase = supabaseClient;

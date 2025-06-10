@@ -4,6 +4,7 @@ import { GimnasioComponent } from './dashboard/gimnasio/gimnasio.component';
 import { LavanderiaComponent } from './dashboard/lavanderia/lavanderia.component';
 import { CalendarComponent } from './shared/calendar/calendar.component';
 import { ReservasComponent } from './shared/reservas/reservas.component';
+import { ConfigComponent } from './dashboard/config/config.component';
 
 export const routes: Routes = [
 
@@ -40,6 +41,10 @@ export const routes: Routes = [
             {
                 path:"lavanderia",
                 component:LavanderiaComponent
+            },
+            {
+                path:"configuracion",
+                component:ConfigComponent
             }
         ]
     },
