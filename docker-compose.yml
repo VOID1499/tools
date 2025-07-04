@@ -1,0 +1,14 @@
+services:
+  angular-app:
+    build: .
+    image: angular:v1
+    mem_limit: 512m
+    cpus: 1.0
+    ports:
+      - "80:80"
+    restart: unless-stopped
+
+networks:
+  web:
+
+

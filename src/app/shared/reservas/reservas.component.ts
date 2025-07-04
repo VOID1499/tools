@@ -63,11 +63,12 @@ export class ReservasComponent implements OnInit {
         next:(payload)=>{
           if(!payload.errors){
             if(payload.eventType == "DELETE"){
-              console.log(payload)
+              console.log(payload.old.id)
             }
           }
         }
       })
+      
       this.resetForm();
       this.route.paramMap.pipe(
       concatMap(params => {
@@ -162,7 +163,6 @@ export class ReservasComponent implements OnInit {
       }
     });
 
-    console.log(this.reservasSort);
   }
   
   getLeft(hora: string): number {
@@ -337,11 +337,11 @@ export class ReservasComponent implements OnInit {
     return this.reservaForm.controls.reservas_deseadas;
   }
   
-  get getHoraFinValue(){
+  get getHoraFinValue():string{
     return this.reservaForm.controls.hora_fin.getRawValue();
   }
 
-  get getIdValue(){
+  get getIdValue():number{
     return this.reservaForm.controls.id.getRawValue();
   }
 

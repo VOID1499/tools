@@ -1,0 +1,26 @@
+name: Deploy to AWS EC2
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - 'Dockerfile'
+      - 'nginx/nginx.conf'
+      - 'docker-compose.yml'
+
+jobs:
+
+  deploy:
+      runs-on: ubuntu-latest
+      environment: docker_server
+      steps:
+        - name: Ejecutar comandos por SSH en EC2
+          uses: appleboy/ssh-action@v1.0.0
+          with:
+            host: ${{ secrets.EC2_HOST }}
+            username: ${{ secrets.EC2_USER }}
+            key: ${{ secrets.EC2_SSH_KEY }}
+            port: 22
+   
+
+              
