@@ -30,7 +30,7 @@ jobs:
               cd /home/ubuntu
 
               if [ ! -d "$REPOSITORY_NAME/.git" ]; then
-                git clone git@github.com:$REPOSITORY.git $REPOSITORY_NAME
+                git clone https://github.com/$REPOSITORY.git $REPOSITORY_NAME
               else
                 cd $REPOSITORY_NAME
                 git pull origin main
