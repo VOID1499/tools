@@ -25,8 +25,8 @@ jobs:
       
       - name: Build docker imagen
         run: |
-            docker build . -t ghcr.io/VOID1499/angular-tools:v1
-            docker push ghcr.io/VOID1499/angular-tools:v1
+            docker build . -t ghcr.io/void1499/angular-tools:v1
+            docker push ghcr.io/void1499/angular-tools:v1
 
             
               
