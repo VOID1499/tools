@@ -9,6 +9,7 @@ env:
 
 
 jobs:
+
   create-docker-image:
     runs-on: ubuntu-latest
     environment: docker_server
@@ -28,5 +29,22 @@ jobs:
             docker build . -t ghcr.io/void1499/angular-tools:v1
             docker push ghcr.io/void1499/angular-tools:v1
 
+      - name: Upload docker-compose artifact
+        uses: actions/upload-artifact@v4
+        with:
+            name: docker-compose-file
+            path: docker-compose.yml
+
+  deploy:
+    needs: [create-docker-image]   
+    runs-on: ubuntu-latest
+    environment: docker_server
+    steps:
+      - name: Download docker-compose artifact
+        uses: actions/download-artifact@v3
+        with:
+            name: docker-compose-file         
+      - name: Show docker-compose.yml
+        run: cat docker-compose.ym      
             
               
