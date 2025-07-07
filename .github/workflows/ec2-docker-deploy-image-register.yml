@@ -45,6 +45,6 @@ jobs:
         with:
             name: docker-compose-file         
       - name: Show docker-compose.yml
-        run: cat docker-compose.ym      
+        run: cat docker-compose.yml      
             
               
