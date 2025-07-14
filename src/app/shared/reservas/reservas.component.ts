@@ -80,6 +80,7 @@ export class ReservasComponent implements OnInit {
       })
     ).subscribe({
         next:(response:PostgrestResponse<Reserva>)=>{
+          console.log(response)
           this.reservas = response.data;
           this.reordenar();
         },

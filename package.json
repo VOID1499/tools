@@ -10,7 +10,8 @@
     "test:watch": "jest --watch",
     "test:ci": "jets --runInBand",
     "docker:build":"docker build . -t angular:v1",
-    "docker:compose":"docker-compose up --build -d"
+    "docker:compose":"docker-compose up --build -d",
+    "compose-dev":"docker compose -f docker-compose.dev.yml up --build -d"
   },
   "private": true,
   "dependencies": {

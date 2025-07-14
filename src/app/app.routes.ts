@@ -5,10 +5,13 @@ import { LavanderiaComponent } from './dashboard/lavanderia/lavanderia.component
 import { CalendarComponent } from './shared/calendar/calendar.component';
 import { ReservasComponent } from './shared/reservas/reservas.component';
 import { ConfigComponent } from './dashboard/config/config.component';
+import { AuthComponent } from './auth/auth.component';
+import { LoginComponent } from './auth/login/login.component';
 
 export const routes: Routes = [
 
     {
+
         path:"dashboard",
         component:DashboardComponent,
         children:[
@@ -48,7 +51,17 @@ export const routes: Routes = [
             }
         ]
     },
+    {
+        path:"auth",
+        component:AuthComponent,
+        children:[
+            {
+                path:"login",
+                component:LoginComponent
+            }
+        ]
 
+    },
     {
         path:"",
         redirectTo:"dashboard",

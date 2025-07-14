@@ -1,6 +1,8 @@
 services:
   angular-app:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     image: angular:v1
     mem_limit: 512m
     cpus: 1.0

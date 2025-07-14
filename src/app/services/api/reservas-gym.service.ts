@@ -59,7 +59,7 @@ supbaseSubscripcion(){
 
 obtenerReservas(fecha:string):Observable<PostgrestResponse<Reserva>> {
   return from(
-    this.supabase.from("reservas").select("*").eq("fecha",fecha)
+    this.supabase.rpc("obtener_reservas",{fecha_param:fecha})
   ).pipe(
     map((response:PostgrestResponse<Reserva>)=>{
       if(response.error){

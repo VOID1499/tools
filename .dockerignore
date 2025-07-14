@@ -3,5 +3,7 @@ dist
 .git
 .gitignore
 Dockerfile
-docker-compose.yml
+Dockerfile.dev
+docker-compose.prod.yml
+docker-compose.dev.yml
 *.log

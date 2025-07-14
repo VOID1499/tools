@@ -36,13 +36,15 @@
         <details>
           <summary>Gimnasio</summary>
           <ul class="p-2">
-            <li><a [routerLink]="['reservas']" >Reservas</a></li>
+            <li><a [routerLink]="['dashboard/reservas']" >Reservas</a></li>
           </ul>
         </details>
       </li>
       <li>
-        <a [routerLink]="['configuracion']" >Configuracion</a>
+        <a [routerLink]="['dashboard/configuracion']" >Configuracion</a>
       </li>
+
     </ul>
+      <a class="btn" [routerLink]="['auth/login']" >Login</a>
   </div>
 </div>
