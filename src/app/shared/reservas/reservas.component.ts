@@ -280,26 +280,42 @@ export class ReservasComponent implements OnInit {
       this.verificarDisponibilidad().pipe(
         mergeMap((disponible:boolean)=>{
           if(disponible){
-            return this._reservasGymService.crearReserva(arr)
+            return this._reservasGymService.crearReservas(arr)
           }else{
             return throwError(() => new Error('No disponible!'));
           }
         })
       ).subscribe({
-        next:(response:PostgrestResponse<Reserva>)=>{
+          next: (resultados) => {
+                  resultados.forEach((res, index) => {
+                    // Caso 1: respuesta de Supabase
+                    if ('data' in res) {
+                      if (res.error) {
+                        console.error(`❌ Error Supabase en reserva ${index + 1}:`, res.error.message);
+                      } else {
+                        console.log(`✅ Reserva ${index + 1} OK:`, res);
+                        if (this.getFechaControl.value === this.fecha) {
+                          this.reservas?.push(res.data);
+                          this.reordenar();
+                        }
+                      }
+                    } else {
+                      // Caso 2: error lanzado y capturado (por catchError)
+                      console.error(`❌ Error en llamada ${index + 1}:`, res.message || res);
+                    }
+                  });
 
-          if(reserva.fecha == this.fecha){
-            console.log("es pa hoy")
-            this.reservas?.push(...response.data!)
-            this.reordenar();
-          }
-          this.setformMessage({message:"Reserva registrada ✍️",error:false});
-        },
-        error:(error:Error)=>{
-          this.setformMessage({message:error.message,error:true})
-        }
-      })
-   
+                  this.reordenar();
+                  this.setformMessage({
+                    message: 'Reservas procesadas',
+                    error: resultados.some(r => !('data' in r) || r.error) // hubo errores
+                  });
+                },
+                error: (err) => {
+                  // Este bloque NO se ejecutará, porque los errores fueron capturados con catchError
+                  this.setformMessage({ message: 'Error inesperado', error: true });
+                }
+              });
   }
 
 

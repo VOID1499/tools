@@ -4,7 +4,8 @@ export interface Reserva {
     departamento:string,
     fecha:string,
     hora_inicio: string; 
-    hora_fin: string;   
+    hora_fin: string;
+    usuario_id?:string;   
 }
 
 

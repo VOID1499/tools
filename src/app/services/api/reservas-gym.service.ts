@@ -1,7 +1,7 @@
 import { inject, Injectable, input } from '@angular/core';
 import { AuthService } from './auth.service';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { from, Observable,defer ,map, Subject} from 'rxjs';
+import { from, Observable,defer ,map, Subject,catchError,forkJoin,of} from 'rxjs';
 import { Reserva } from '../../interfaces/reserva.interface';
 import { PostgrestResponse } from '../../interfaces/supabaseResponse.interface';
 import { FormBuilder } from '@angular/forms';
@@ -70,17 +70,34 @@ obtenerReservas(fecha:string):Observable<PostgrestResponse<Reserva>> {
   )
 }
 
-crearReserva(reserva:Reserva[]){
-  return from(
-    this.supabase.from("reservas").insert(reserva)
-    .select()
-  ).pipe(map((response:PostgrestResponse<Reserva>)=>{
-      if(response.error){
-        throw response.error
-      }
-      return response
-    }))
+crearReservas(reservas: Reserva[]) {
+  const llamadas = reservas.map((reserva, index) =>
+    from(
+      this.supabase.rpc("crear_reserva", {
+        departamento: reserva.departamento,
+        fecha: reserva.fecha,
+        hora_fin: reserva.hora_fin,
+        hora_inicio: reserva.hora_inicio,
+        nombre: reserva.nombre,
+        usuario_id: null,
+      })
+    ).pipe(
+      map((response: PostgrestResponse<Reserva>) => { // mapeando solo una request
+        if (response.error) {
+          throw response.error;
+        }
+        return response;
+      }),
+      catchError(error => {
+        // Manejo de error individual
+        return of(error);
+      })
+    )
+  );
+
+  return forkJoin(llamadas); // retorna un array con resultados de todas
 }
+
 
 eliminarReserva(id:number) {
   console.log(id)
