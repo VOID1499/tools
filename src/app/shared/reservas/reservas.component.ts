@@ -59,16 +59,7 @@ export class ReservasComponent implements OnInit {
 
   
   ngOnInit(): void {
-      this._reservasGymService.changesDataReservas$.subscribe({
-        next:(payload)=>{
-          if(!payload.errors){
-            if(payload.eventType == "DELETE"){
-              console.log(payload.old.id)
-            }
-          }
-        }
-      })
-      
+      this.suscripcionRealTimeReservas();
       this.resetForm();
       this.route.paramMap.pipe(
       concatMap(params => {
@@ -130,6 +121,43 @@ export class ReservasComponent implements OnInit {
   getReservas(){
     return this._reservasGymService.obtenerReservas(this.fecha);
   }
+
+
+  suscripcionRealTimeReservas(){
+   this._reservasGymService.changesDataReservas$.subscribe({
+      next: (payload) => {
+        if (!payload.errors) {
+          switch (payload.eventType) {
+            case "DELETE":
+              const deleteIndex = this.reservas!.findIndex(item => item.id === payload.old.id);
+              if (deleteIndex !== -1) {
+                this.reservas!.splice(deleteIndex, 1);
+                this.reordenar();
+              }
+              break;
+
+            case "UPDATE":
+              const updateIndex = this.reservas!.findIndex(item => item.id === payload.new.id);
+              if (updateIndex !== -1) {
+                // Reemplazas el item actualizado en la posición correspondiente
+                this.reservas![updateIndex] = payload.new;
+                this.reordenar();
+              }
+              break;
+
+            case "INSERT":
+              // Agregas el nuevo item a la lista
+              this.reservas!.push(payload.new);
+              this.reordenar();
+              break;
+            default:
+              break;
+          }
+        }
+      }
+    });
+
+}  
 
 
   
@@ -294,10 +322,6 @@ export class ReservasComponent implements OnInit {
                         console.error(`❌ Error Supabase en reserva ${index + 1}:`, res.error.message);
                       } else {
                         console.log(`✅ Reserva ${index + 1} OK:`, res);
-                        if (this.getFechaControl.value === this.fecha) {
-                          this.reservas?.push(res.data);
-                          this.reordenar();
-                        }
                       }
                     } else {
                       // Caso 2: error lanzado y capturado (por catchError)
