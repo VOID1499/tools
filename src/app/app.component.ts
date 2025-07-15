@@ -10,7 +10,14 @@ import { NavComponent } from './layout/nav/nav.component';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-
-  private _authService:AuthService = inject(AuthService);
   title = 'tools';
+  private authService:AuthService = inject(AuthService);
+
+  ngOnInit(): void {
+   this.authService.session$.subscribe({
+    next:(ses)=>{
+      console.log(ses)
+    }
+   })
+  }
 }

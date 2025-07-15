@@ -29,12 +29,8 @@ export class ReservasGymService {
   } else {
     localStorage.setItem("reservas_config", JSON.stringify(this.configuracionReservas));
   }
-    this._authService.supabase$.subscribe({
-      next:(supabaseClient:SupabaseClient)=>{
-        this.supabase = supabaseClient;
-        this.supbaseSubscripcion();
-      }
-      })
+    this.supabase = this._authService.client;
+    this.supbaseSubscripcion();
   }
 
 

@@ -71,7 +71,6 @@ export class ReservasComponent implements OnInit {
       })
     ).subscribe({
         next:(response:PostgrestResponse<Reserva>)=>{
-          console.log(response)
           this.reservas = response.data;
           this.reordenar();
         },
@@ -277,7 +276,9 @@ export class ReservasComponent implements OnInit {
   }
 
   openForm(reserva?:Reserva){
+    
     if(reserva){
+      console.log(reserva)
       this.reservaForm.setValue({
         id:reserva.id!,
         nombre:reserva.nombre,

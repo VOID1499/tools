@@ -7,6 +7,7 @@ import { ReservasComponent } from './shared/reservas/reservas.component';
 import { ConfigComponent } from './dashboard/config/config.component';
 import { AuthComponent } from './auth/auth.component';
 import { LoginComponent } from './auth/login/login.component';
+import { CallbackComponent } from './auth/callback/callback.component';
 
 export const routes: Routes = [
 
@@ -58,14 +59,22 @@ export const routes: Routes = [
             {
                 path:"login",
                 component:LoginComponent
+            },
+             {
+                path:"singup",
+                component:LoginComponent
+            },
+             {
+                path:"callback",
+                component:CallbackComponent
             }
-        ]
-
+        ],
+     
     },
-    {
-        path:"",
-        redirectTo:"dashboard",
-        pathMatch:"full"
-    }
-    
+
+       {
+            path:"",
+            redirectTo:"dashboard",
+            pathMatch:"full"
+        }
 ];

@@ -1,23 +1,49 @@
 import { Injectable } from '@angular/core';
-import { createClient,SupabaseClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient, Session, User } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
-import { BehaviorSubject,Observer,ReplaySubject,Subject,Subscription } from 'rxjs';
-@Injectable({
-  providedIn: 'root'
-})
-export class AuthService {
+import { BehaviorSubject } from 'rxjs';
 
-  private supabase:ReplaySubject<SupabaseClient> = new ReplaySubject(1);
-  supabase$ = this.supabase.asObservable();
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  private supabase: SupabaseClient;
+  private sessionSubject = new BehaviorSubject<Session | null>(null);
+  session$ = this.sessionSubject.asObservable();
 
   constructor() {
-    this.createAnonClient();
+    this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
+
+    // Cargar sesión guardada (si existe)
+    this.loadSession();
+
+    // Escuchar cambios de sesión en tiempo real
+    this.supabase.auth.onAuthStateChange((_event, session) => {
+      this.sessionSubject.next(session);
+    });
   }
 
-  createAnonClient(){
-    const supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey);
-    this.supabase.next(supabase);
+  get client(): SupabaseClient {
+    return this.supabase;
   }
 
+  private async loadSession() {
+    const { data } = await this.supabase.auth.getSession();
+    this.sessionSubject.next(data.session);
+  }
 
+  // Login con Google
+  signInWithGoogle(redirectTo?: string) {
+    return this.supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectTo ?? window.location.origin + '/auth/callback'
+      }
+    });
+  }
+
+  // Logout
+  async signOut() {
+    await this.supabase.auth.signOut();
+    //this.sessionSubject.next(null); // opcional, Supabase también lo hace por onAuthStateChange
+  }
+  
 }

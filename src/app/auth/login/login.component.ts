@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AuthService } from '../../services/api/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -8,6 +9,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
   styleUrl: './login.component.css'
 })
 export class LoginComponent {
+
+  private authService:AuthService = inject(AuthService);
 
   private fb:FormBuilder = inject(FormBuilder);
 
@@ -25,4 +28,7 @@ export class LoginComponent {
     }
   }
 
+  loginWithGoogle(){
+    this.authService.signInWithGoogle()
+  }
 }

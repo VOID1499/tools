@@ -45,6 +45,12 @@
       </li>
 
     </ul>
+
+    @if (authService.session$ | async ) {
+      <button appSession (click)="logout()" class="btn" >Logout</button>
+    } @else {
       <a class="btn" [routerLink]="['auth/login']" >Login</a>
+    }
+
   </div>
 </div>
