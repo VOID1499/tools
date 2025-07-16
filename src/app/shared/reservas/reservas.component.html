@@ -121,9 +121,9 @@
             {{`${getHoraInicioControl.value} - ${getHoraFinValue}`}}
           </p>
           
-          <div class="flex justify-between items-end w-full">
+          <div  class="flex justify-between items-end w-full">
             <span class="text-accent text-xl">{{getDepartamentoControl.value}}</span>
-            <button (click)="eliminarReserva(reservaForm.controls.id.value)" class="btn btn-sm btn-error">Eliminar</button>
+            <button  (click)="eliminarReserva(reservaForm.controls.id.value)" class="btn btn-sm btn-error">Eliminar</button>
           </div>
 
           @if(formMessage.message != ''){

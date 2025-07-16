@@ -14,10 +14,6 @@ export class AppComponent {
   private authService:AuthService = inject(AuthService);
 
   ngOnInit(): void {
-   this.authService.session$.subscribe({
-    next:(ses)=>{
-      console.log(ses)
-    }
-   })
+   this.authService.session$.subscribe()
   }
 }

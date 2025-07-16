@@ -18,8 +18,9 @@
          <li>
           <a>Gimnasio</a>
           <ul class="p-2">
-            <li><a [routerLink]="['reservas']" >Reservas</a></li>
-            <li><a>...</a></li>
+             <li>
+              <a [routerLink]="['dashboard/reservas']" >Reservas</a>
+            </li>
           </ul>
         </li>
         
@@ -36,18 +37,22 @@
         <details>
           <summary>Gimnasio</summary>
           <ul class="p-2">
-            <li><a [routerLink]="['dashboard/reservas']" >Reservas</a></li>
+            <li>
+              <a [routerLink]="['dashboard/reservas']" >Reservas</a>
+            </li>
+            <li [appSession]="['admin']" >
+              <a  [routerLink]="['dashboard/configuracion']" >Configuracion</a>
+            </li>
           </ul>
         </details>
       </li>
-      <li>
-        <a [routerLink]="['dashboard/configuracion']" >Configuracion</a>
+       <li [appSession]="[]" class="">
+        <a  [routerLink]="['dashboard/perfil']" >Mis datos</a>
       </li>
-
     </ul>
 
     @if (authService.session$ | async ) {
-      <button appSession (click)="logout()" class="btn" >Logout</button>
+      <button (click)="logout()" class="btn" >Logout</button>
     } @else {
       <a class="btn" [routerLink]="['auth/login']" >Login</a>
     }

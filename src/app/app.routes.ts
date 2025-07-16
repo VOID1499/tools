@@ -8,6 +8,7 @@ import { ConfigComponent } from './dashboard/config/config.component';
 import { AuthComponent } from './auth/auth.component';
 import { LoginComponent } from './auth/login/login.component';
 import { CallbackComponent } from './auth/callback/callback.component';
+import { PerfilComponent } from './dashboard/perfil/perfil.component';
 
 export const routes: Routes = [
 
@@ -45,6 +46,10 @@ export const routes: Routes = [
             {
                 path:"lavanderia",
                 component:LavanderiaComponent
+            },
+            {
+                path:"perfil",
+                component:PerfilComponent
             },
             {
                 path:"configuracion",

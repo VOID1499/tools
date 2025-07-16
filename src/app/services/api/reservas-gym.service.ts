@@ -13,11 +13,11 @@ import { configuracionReservas} from '../../interfaces/reservasConfiguracion';
 export class ReservasGymService {
 
   public configuracionReservas:configuracionReservas = {
-    horasPorPersona:"01:30",
+    horasPorPersona:"01:00",
     maximoPersonas:3,
   }
-  private _authService:AuthService = inject(AuthService);
-  private supabase!:SupabaseClient;
+  private authService:AuthService = inject(AuthService);
+  private supabaseClient:SupabaseClient = this.authService.client;
 
   private changesDataReservas = new Subject<any>();
   public changesDataReservas$ = this.changesDataReservas.asObservable();
@@ -29,13 +29,13 @@ export class ReservasGymService {
   } else {
     localStorage.setItem("reservas_config", JSON.stringify(this.configuracionReservas));
   }
-    this.supabase = this._authService.client;
+
     this.supbaseSubscripcion();
   }
 
 
 supbaseSubscripcion(){
-  this.supabase
+  this.supabaseClient
       .channel('realtime-reservas')
       .on(
         'postgres_changes',
@@ -55,7 +55,7 @@ supbaseSubscripcion(){
 
 obtenerReservas(fecha:string):Observable<PostgrestResponse<Reserva>> {
   return from(
-    this.supabase.rpc("obtener_reservas",{fecha_param:fecha})
+    this.supabaseClient.rpc("obtener_reservas",{fecha_param:fecha})
   ).pipe(
     map((response:PostgrestResponse<Reserva>)=>{
       if(response.error){
@@ -69,7 +69,7 @@ obtenerReservas(fecha:string):Observable<PostgrestResponse<Reserva>> {
 crearReservas(reservas: Reserva[]) {
   const llamadas = reservas.map((reserva, index) =>
     from(
-      this.supabase.rpc("crear_reserva", {
+      this.supabaseClient.rpc("crear_reserva", {
         departamento: reserva.departamento,
         fecha: reserva.fecha,
         hora_fin: reserva.hora_fin,
@@ -98,7 +98,7 @@ crearReservas(reservas: Reserva[]) {
 eliminarReserva(id:number) {
   console.log(id)
   return from(
-    this.supabase
+    this.supabaseClient
       .from("reservas")
       .delete()
       .eq("id", id)
